@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
+    <h1>Listas de Países</h1>
+    <ul>
+            {% for region in regions %}
+                <li>
+                    <p>
+                        {{region.region_id}} - {{ region.region_description }}
+                    </p>
+                </li>
+            {% endfor %}
+    </ul>
+</body>
+</html>

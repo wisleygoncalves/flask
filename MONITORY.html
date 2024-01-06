@@ -1,0 +1,107 @@
+'''
+1 - SQL PARA CRIAR NOVO BANCO E ATUALIZAR
+
+-- Criar a Tabela 2 excluindo equipamentos inativos
+CREATE TABLE Tabela2 AS
+SELECT *
+FROM Tabela1
+WHERE (codigo_equipamento, data_insercao) IN (
+  SELECT codigo_equipamento, MAX(data_insercao) AS ultima_data
+  FROM Tabela1
+  GROUP BY codigo_equipamento
+);
+
+-- Criar o Trigger
+CREATE OR REPLACE TRIGGER trg_atualiza_tabela2
+AFTER INSERT OR UPDATE ON Tabela1
+FOR EACH ROW
+BEGIN
+  -- Verificar se o equipamento não é inativo
+  IF :NEW.descricao_do_equipamento NOT LIKE 'inativos%' THEN
+    -- Deletar a linha existente na Tabela 2 para o código de equipamento
+    DELETE FROM Tabela2 WHERE codigo_equipamento = :NEW.codigo_equipamento;
+
+    -- Inserir a nova linha na Tabela 2
+    INSERT INTO Tabela2 VALUES (:NEW.codigo_equipamento, :NEW.outros_campos, :NEW.data_insercao);
+  END IF;
+END;
+/
+'''
+
+'''
+2 - CRIAÇÃO DA API PARA ALIMENTAÇÃO E ATUALIZAÇÃO DOS EQUIPAMENTOS
+
+SQL PARA CRIAR RELAÇÃO ENTRE OS DOIS OS BANCOS DE DADOS
+
+SELECT
+  t1.codigo_equipamento,
+  t1.descricao_do_equipamento,
+  t2.outros_campos_tabela2,
+  CASE
+    WHEN t1.descricao_do_equipamento LIKE 'Categoria1%' THEN 'Categoria1'
+    WHEN t1.descricao_do_equipamento LIKE 'Categoria2%' THEN 'Categoria2'
+    -- Adicione mais cláusulas WHEN conforme necessário
+    ELSE 'Outros'
+  END AS categoria
+FROM
+  Tabela1 t1
+LEFT JOIN
+  Tabela2 t2 ON t1.codigo_equipamento = t2.codigo_equipamento;
+'''
+
+'''
+3 - API DE GEOLOCALIZAÇÃO
+
+- VERIFICAR ONDE ESTÁ CADA PONTO
+
+SELECT
+  t1.id AS id_retangulo,
+  t1.geom AS geometria_retangulo,
+  t2.id AS id_ponto,
+  t2.geom AS geometria_ponto
+FROM
+  Tabela1 t1
+JOIN
+  Tabela2 t2 ON ST_Within(t2.geom, t1.geom);
+
+- LÓGICA DA API
+
+SE TIVER ALTERAÇÃO DE CERCA DEVE EMITIR TRUE, CASO NÃO DEVE EMITIR FALSE
+
+'''
+
+'''
+4 - CONFIGURAÇÃO DO NODE
+
+'''
+
+'''
+5 - APIS DE SELECTS
+
+# BUSCA POR CATEGORIA DE EQUIPAMENTO (FILTRO POR TIPO DE EQUIPAMENTOS)
+# BUSCA POR CERCA (FILTRO POR TIPOS DE CERCAS)
+# BUSCA POR FROTA
+'''
+
+'''
+6 - ESTRUTURAÇÃO DAS APIS NA APLICAÇÃO
+
+# FAZER A PÁGINA COM KABAN DAS CERCAS
+# FAZER A PÁGINA COM KABAN OS TIPOS DE EQUIAMENTOS
+# FAZER A PÁGINA COM MAPA DE GEOLOCALIZAÇÃO EM TEMPO REAL
+'''
+
+'''
+7 - DESENVOLVER POP UP QUE AVISA MUDANÇA DA CERCA
+'''
+
+'''
+8 - FAZER O DRAP E DROP NOS KABANS DAS PÁGINAS
+'''
+
+'''
+9 - FAZER A API DE REGISTRO E AUTENTICAÇÃO
+
+# MONTAR AS APIS
+# DESENVOLVER FRONT END
+'''
